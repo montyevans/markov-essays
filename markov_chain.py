@@ -2,6 +2,7 @@ import getch
 import bisect
 import random
 import numpy as np
+import math
 
 #------------------------------Functions start-------------------------------------------------
 def Prefix_Suffix_Pairs(prefix_length, essay_list):
@@ -55,9 +56,8 @@ def Next_Word(prefix_dict, this_prefix):
     
     return chosen_word
 
-def Generate_Text(prefix_length, min_length, prefix_dict):
-    max_length=min_length*2
-    min_length+=prefix_length #We don't want to count the initial empty strings
+def Generate_Text(prefix_length, max_length, prefix_dict):
+    max_length+=prefix_length #We don't want to count the initial empty strings
 
     #Initialize the text with a long enough blank prefix
     text=["" for i in range(prefix_length)]
@@ -69,11 +69,17 @@ def Generate_Text(prefix_length, min_length, prefix_dict):
         if not next_word: break #We failed to find a suffix for the prefix
         text.append(next_word)
 
-        #Ideally, we want to finish on a full stop
-        if (len(text) >= min_length and next_word[-1]=='.') or len(text) >= max_length: break
+        if len(text) >= max_length: break
 
-    text=text[prefix_length:] #Get rid of the initial empty strings
-    return " ".join(text) #Join up with spaces and return
+    #Get rid of the initial empty strings, and join up with spaces
+    text=" ".join(text[prefix_length:])
+
+    #If there were no full stops, retry with the generation
+    if '.' not in text: return Generate_Text(prefix_length, max_length-prefix_length, prefix_dict)
+    
+    #We want to finish on a full stop, so find the pos of the last one, and grab everything up to and including it
+    last_stop_pos=len(text)-text[::-1].find('.')-1    
+    return text[:last_stop_pos+1]
     
 #------------------------------Functions end-----------------------------------------------------
 
@@ -84,9 +90,9 @@ essay_list=[s.strip() for s in open(corpus_path,'r').read().split("\n"*10) if le
 
 #print str(len(essay_list))+" essays found."
 
-intro="Hi! This is the Common App Markov Text Generator. We tried hard to find a lot of essays for our corpus, but so far \
+intro="\nHi! This is the Common App Markov Text Generator. We tried hard to find a lot of essays for our corpus, but so far \
 we've only found 137 top-of-the-line pieces. While this gives us a dataset of just over 400KB, Markov-vy Madness would ideally \
-prefer quite a bit more. As such, we reccomend that your Markov chunks are of length 1 or 2, as anything more will likely \
+prefer quite a bit more. As such, we recommend that your Markov chunks are of length 1 or 2, as anything more will likely \
 fail to produce a sizeable text.\n\nPlease enter your settings now, and enjoy.\n"
 
 print intro
@@ -102,15 +108,15 @@ except:
 
 #Ask for the word_length: the minimum word length of the text we want to generate
 try:
-    word_length=int(raw_input("Text word length: "))
+    words_length=int(raw_input("Max word count: "))
     if prefix_length < 1: raise Exception()
 except:
-    print "Text word length must be a positive integer"
+    print "Max word count must be a positive integer"
     quit()
     
-min_length = (word_length // prefix_length) + 1
+min_length = int(math.ceil(float(words_length) / float(prefix_length)))
 prefix_dict = Prefix_Suffix_Pairs(prefix_length, essay_list)
-#print "prefix_dict generated with "+str(len(prefix_dict))+" unique prefixes."
+
 
 while True:
     text=Generate_Text(prefix_length, min_length, prefix_dict)

@@ -1,4 +1,5 @@
 import html
+import re
 
 raw_pages=open("raw_pages","r").read()
 
@@ -26,19 +27,17 @@ while True:
         
 print(str(len(raw_essays))+" essays extracted")
 
-def RemoveTag(essay,tag):
-    return essay.replace("<"+tag+">"," ").replace("</"+tag+">"," ")
+#Replace weird whitespace with simple spaces
+for i in range(len(raw_essays)): raw_essays=[' '.join(e.split()) for e in raw_essays]
 
+#Join up into a single string
 parsed_essays=splitter.join(raw_essays)
 
 #Translate HTML entities
 parsed_essays=html.unescape(parsed_essays)
 
-#Remove tags
-tags=["em","strong","br","span","u","p","sup","a","ul","li"]
-for t in tags: parsed_essays=RemoveTag(parsed_essays,t)
-parsed_essays=parsed_essays.replace("<br/>"," ") #Damn those self closers
-
+#Remove residual tags - make sure to do non-greedy matching (the '?') so that we don't consume the whole essay.
+parsed_essays=re.sub("<.*?>"," ", parsed_essays)
 
 #Strip these two odd '-' and '_' that have appeared
 stripped=""
@@ -49,8 +48,11 @@ for c in parsed_essays:
 parsed_essays=stripped
 
 #Remove extra spaces
-import re
 parsed_essays=re.sub(' +',' ', parsed_essays)
+
+#And kill the irritating SAT score thing at the end of some seemingly random subset of the essays. It's denoted by a "--- SAT", so scan
+#that and kill everything after it up to the newline.
+parsed_essays=re.sub("--- SAT.*\n",'\n',parsed_essays)
 
 #Then write the parsed_essays
 open("parsed_essays",'w').write(parsed_essays+splitter)
