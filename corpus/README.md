@@ -11,7 +11,7 @@ when I think long and hard about this rounded picture I'm supposed to be present
 
 So what is to be done?
 
-Research! I read past successful essays. Google 'This essay got x into y Ivies' and a hundred sketchy
+Research! Google 'This essay got x into y Ivies' and a hundred sketchy
 articles jump out at you. You read, and you wince at the agressive quantity of adjectives dusted off the 
 thesaurus shelf for their singular lifetime use, and in between several softly spoken sentences saying surprisingly
 senseless somethings you wonder why everybody is pounding out alliteration and refusing to put it anywhere other than
